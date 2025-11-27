@@ -21,16 +21,15 @@ jobs:
             SOURCE=$(jq -r ".[$i].source" tasks.json)
             TARGETS=$(jq -r ".[$i].targets[]" tasks.json)
             TEMP_DIR=$(mktemp -d)
-            git clone --bare "https://github.com/$SOURCE.git" "$TEMP_DIR"
+            git clone --bare "https://github.com/$SOURCE.git" "$TEMP_DIR" >/dev/null 2>&1
             cd "$TEMP_DIR"
-            git fetch --all
-            git fetch --tags
+            git fetch --all --quiet
+            git fetch --tags --quiet
             echo "$TARGETS" | while read TARGET; do
               TARGET_URL="git@github.com:$TARGET.git"
-              git push --all "$TARGET_URL"
-              git push --tags "$TARGET_URL"
+              git push --all --quiet "$TARGET_URL"
+              git push --tags --quiet "$TARGET_URL"
             done
             cd ..
             rm -rf "$TEMP_DIR"
           done
-
