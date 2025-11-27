@@ -4,25 +4,10 @@ on:
     - cron: 0 16 * * *
   workflow_dispatch:
 jobs:
-  config:
-    runs-on: ubuntu-latest
-    outputs:
-      tasks: ${{ env.tasks }}
-    steps:
-      - name: Config
-        run: |
-          {
-            echo "tasks<<EOF"
-            echo '${{ secrets.TASKS }}'
-            echo EOF
-          } >> "$GITHUB_ENV"
   sync:
-    needs: config
-    strategy:
-      fail-fast: false
-      matrix:
-        task: ${{ fromJSON(needs.config.outputs.tasks) }}
     runs-on: ubuntu-latest
+    env:
+      TASKS: ${{ secrets.TASKS }}
     steps:
       - name: Sync
         run: |
@@ -30,10 +15,21 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan github.com >> ~/.ssh/known_hosts
-          git clone --mirror https://github.com/${{ matrix.task.source }}.git .git
-          git for-each-ref --format='%(refname)' refs/pull/ | xargs -n 1 git update-ref -d
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for target in $(echo '${{ toJSON(matrix.task.targets) }}' | jq -r '.[]'); do
-            git push --mirror -f git@github.com:$target.git
+          echo "$TASKS" > tasks.json
+          COUNT=$(jq length tasks.json)
+          for i in $(seq 0 $((COUNT - 1))); do
+            SOURCE=$(jq -r ".[$i].source" tasks.json)
+            TARGETS=$(jq -c ".[$i].targets[]" tasks.json)
+            TEMP_DIR=$(mktemp -d)
+            git clone --bare "https://github.com/$SOURCE.git" "$TEMP_DIR"
+            cd "$TEMP_DIR"
+            git fetch --all
+            git fetch --tags
+            echo "$TARGETS" | while read TARGET; do
+              TARGET_URL="git@github.com:$TARGET.git"
+              git push --all "$TARGET_URL"
+              git push --tags "$TARGET_URL"
+            done
+            cd ..
+            rm -rf "$TEMP_DIR"
           done
