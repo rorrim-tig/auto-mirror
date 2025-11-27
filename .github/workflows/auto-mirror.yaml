@@ -1,0 +1,40 @@
+name: Auto Mirror
+on:
+  schedule:
+    - cron: 0 16 * * *
+  workflow_dispatch:
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    outputs:
+      tasks: ${{ env.tasks }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Config
+        run: |
+          {
+            echo "tasks<<EOF"
+            echo "${{ vars.TASKS }}"
+            echo EOF
+          } >> "$GITHUB_ENV"
+  sync:
+    needs: config
+    strategy:
+      fail-fast: false
+      matrix:
+        task: ${{ fromJSON(needs.config.outputs.tasks) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          git clone --mirror https://github.com/${{ matrix.task.source }}.git .git
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for target in $(echo '${{ toJSON(matrix.task.targets) }}' | jq '.[]'); do
+            git push --mirror -f git@github.com:$target.git
+          done
