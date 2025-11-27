@@ -9,13 +9,11 @@ jobs:
     outputs:
       tasks: ${{ env.tasks }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
       - name: Config
         run: |
           {
             echo "tasks<<EOF"
-            echo "${{ vars.TASKS }}"
+            echo '${{ vars.TASKS }}'
             echo EOF
           } >> "$GITHUB_ENV"
   sync:
