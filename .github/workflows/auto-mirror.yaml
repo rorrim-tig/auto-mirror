@@ -33,6 +33,6 @@ jobs:
           git clone --mirror https://github.com/${{ matrix.task.source }}.git .git
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for target in $(echo '${{ toJSON(matrix.task.targets) }}' | jq '.[]'); do
+          for target in $(echo '${{ toJSON(matrix.task.targets) }}' | jq -r '.[]'); do
             git push --mirror -f git@github.com:$target.git
           done
