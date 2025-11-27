@@ -30,8 +30,6 @@ jobs:
               git push --all --quiet "$TARGET_URL" >/dev/null 2>&1
               git push --tags --quiet "$TARGET_URL" >/dev/null 2>&1
             done
-            rm -rf "$TEMP_DIR"
             cd "$GITHUB_WORKSPACE"
+            rm -rf "$TEMP_DIR"
           done
-
-
