@@ -13,7 +13,7 @@ jobs:
         run: |
           {
             echo "tasks<<EOF"
-            echo '${{ vars.TASKS }}'
+            echo '${{ secrets.TASKS }}'
             echo EOF
           } >> "$GITHUB_ENV"
   sync:
@@ -31,6 +31,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan github.com >> ~/.ssh/known_hosts
           git clone --mirror https://github.com/${{ matrix.task.source }}.git .git
+          git for-each-ref --format='%(refname)' refs/pull/ | xargs -n 1 git update-ref -d
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           for target in $(echo '${{ toJSON(matrix.task.targets) }}' | jq -r '.[]'); do
