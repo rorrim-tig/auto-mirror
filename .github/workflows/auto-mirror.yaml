@@ -19,7 +19,7 @@ jobs:
           COUNT=$(jq length tasks.json)
           for i in $(seq 0 $((COUNT - 1))); do
             SOURCE=$(jq -r ".[$i].source" tasks.json)
-            TARGETS=$(jq -c ".[$i].targets[]" tasks.json)
+            TARGETS=$(jq -r ".[$i].targets[]" tasks.json)
             TEMP_DIR=$(mktemp -d)
             git clone --bare "https://github.com/$SOURCE.git" "$TEMP_DIR"
             cd "$TEMP_DIR"
@@ -33,3 +33,4 @@ jobs:
             cd ..
             rm -rf "$TEMP_DIR"
           done
+
