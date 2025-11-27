@@ -25,7 +25,7 @@ jobs:
             cd "$TEMP_DIR"
             git fetch --all --quiet >/dev/null 2>&1
             git fetch --tags --quiet >/dev/null 2>&1
-            for TARGET in $(jq -r ".[$i].targets[]" tasks.json); do
+            echo "$TARGETS" | while read TARGET; do
               TARGET_URL="git@github.com:$TARGET.git"
               git push --all --quiet "$TARGET_URL" >/dev/null 2>&1
               git push --tags --quiet "$TARGET_URL" >/dev/null 2>&1
