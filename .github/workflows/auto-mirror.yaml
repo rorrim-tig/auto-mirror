@@ -1,7 +1,7 @@
 name: Auto Mirror
 on:
   schedule:
-    - cron: 0 16 * * *
+    - cron: 0 16 */7 * *
   workflow_dispatch:
 jobs:
   sync:
@@ -33,4 +33,5 @@ jobs:
             rm -rf "$TEMP_DIR"
             cd "$GITHUB_WORKSPACE"
           done
+
 
