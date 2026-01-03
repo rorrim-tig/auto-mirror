@@ -18,18 +18,16 @@ jobs:
           echo "$TASKS" > tasks.json
           COUNT=$(jq length tasks.json)
           for i in $(seq 0 $((COUNT - 1))); do
+            echo "Task #$i start"
             SOURCE_URL=$(jq -r ".[$i].source" tasks.json)
             TARGETS=$(jq -r ".[$i].targets[]" tasks.json)
             TEMP_DIR=$(mktemp -d)
             git clone --bare "$SOURCE_URL" "$TEMP_DIR" >/dev/null 2>&1
             cd "$TEMP_DIR"
-            git fetch --all --quiet >/dev/null 2>&1
-            git fetch --tags --quiet >/dev/null 2>&1
             echo "$TARGETS" | while read TARGET; do
-              TARGET_URL="git@github.com:$TARGET.git"
-              git push --all --quiet "$TARGET_URL" >/dev/null 2>&1
-              git push --tags --quiet "$TARGET_URL" >/dev/null 2>&1
+              git push "git@github.com:$TARGET.git" "refs/heads/*:refs/heads/*" "refs/tags/*:refs/tags/*" >/dev/null 2>&1
             done
             cd "$GITHUB_WORKSPACE"
             rm -rf "$TEMP_DIR"
+            echo "Task #$i over"
           done
