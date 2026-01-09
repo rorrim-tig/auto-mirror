@@ -26,9 +26,7 @@ jobs:
             echo "Task #$i clone success"
             cd "$TEMP_DIR"
             echo "$TARGETS" | while read TARGET; do
-              git push "git@github.com:$TARGET.git" "refs/heads/*:refs/heads/*" "refs/tags/*:refs/tags/*" >/dev/null 2>&1 && \
-              echo "Task #$i push success" || \
-              echo "Task #$i push failed"
+              git push --quiet "git@github.com:$TARGET.git" "refs/heads/*:refs/heads/*" "refs/tags/*:refs/tags/*" && echo "Task #$i push success" || echo "Task #$i push failed"
             done
             cd "$GITHUB_WORKSPACE"
             rm -rf "$TEMP_DIR"
