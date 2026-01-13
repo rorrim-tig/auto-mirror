@@ -22,7 +22,7 @@ jobs:
             SOURCE_URL=$(jq -r ".[$i].source" tasks.json)
             TARGETS=$(jq -r ".[$i].targets[]" tasks.json)
             TEMP_DIR=$(mktemp -d)
-            git clone --bare "$SOURCE_URL" "$TEMP_DIR" >/dev/null 2>&1
+            git clone --quiet --bare "$SOURCE_URL" "$TEMP_DIR"
             echo "Task #$i clone success"
             cd "$TEMP_DIR"
             echo "$TARGETS" | while read TARGET; do
